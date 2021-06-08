@@ -1,0 +1,12 @@
+FROM golang:1.16-stretch
+
+WORKDIR /go/src/github.com/uta8a/isucon-suburi-portal/
+
+COPY . .
+
+RUN apt-get update && apt-get install -y netcat
+
+RUN chmod +x ./local-dev/dev/run.sh
+RUN go get -v github.com/rubenv/sql-migrate/...
+
+CMD [ "./local-dev/dev/run.sh" ]

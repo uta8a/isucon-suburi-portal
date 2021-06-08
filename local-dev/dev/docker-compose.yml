@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=isucon
+      - POSTGRES_PASSWORD=isucon_password
+      - POSTGRES_DB=isucon_db
+    ports:
+    - '15432:5432'
+    networks:
+      - api-network
+  backend:
+    build:
+      context: ../../
+      dockerfile: local-dev/dev/Dockerfile.server
+    ports:
+      - '8080:8080'
+    restart: always
+    networks:
+      - api-network
+networks:
+  api-network:
+    driver: bridge
+volumes:
+  db-data:
+    driver: local
