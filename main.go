@@ -15,7 +15,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/lib/pq"
 )
 
 // type Team struct {
@@ -44,10 +43,10 @@ type Report struct {
 	Message  string `json:"message"`
 }
 
-// type ScoreBoard struct {
-// 	Len  int   `json:"len"`
-// 	Logs []Log `json:"logs"`
-// }
+type ScoreBoard struct {
+	Len  int   `json:"len"`
+	Logs []Log `json:"logs"`
+}
 
 type Template struct {
 	templates *template.Template
@@ -72,25 +71,24 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return nil
 }
 
-func (s *State) getBoard(c echo.Context) error {
+func (s *State) fetchAllData(c echo.Context) (logs []Log, err error) {
 	rows, err := s.DB.Queryx("SELECT * FROM score_log")
 	if err != nil {
 		c.Logger().Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to fetch data from DB.")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Failed to fetch data from DB.")
 	}
-	var logs []Log
 	for rows.Next() {
 		var scoreLog ScoreLog
 		err = rows.StructScan(&scoreLog)
 		if err != nil {
 			c.Logger().Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert data to struct.")
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert data to struct.")
 		}
 		var TeamName string
 		err = s.DB.Get(&TeamName, "SELECT name FROM team WHERE id = ?", scoreLog.TeamId)
 		if err != nil {
 			c.Logger().Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to Get TeamName.")
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, "Failed to Get TeamName.")
 		}
 		res := Log{
 			TeamName: TeamName,
@@ -101,6 +99,14 @@ func (s *State) getBoard(c echo.Context) error {
 		logs = append(logs, res)
 	}
 	sort.SliceStable(logs, func(i, j int) bool { return logs[i].LogTime.After(logs[j].LogTime) })
+	return logs, nil
+}
+
+func (s *State) getBoard(c echo.Context) (err error) {
+	var logs []Log
+	if logs, err = s.fetchAllData(c); err != nil {
+		return err
+	}
 	return c.Render(http.StatusOK, "index.html", logs)
 }
 
@@ -131,6 +137,15 @@ func (s *State) reportScore(c echo.Context) (err error) {
 	return nil
 }
 
+func (s *State) logJson(c echo.Context) (err error) {
+	var logs []Log
+	if logs, err = s.fetchAllData(c); err != nil {
+		return err
+	}
+	Len := len(logs)
+	scoreBoard := ScoreBoard{Len: Len, Logs: logs}
+	return c.JSON(http.StatusOK, scoreBoard)
+}
 func dbconfig() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
 }
@@ -168,6 +183,7 @@ func main() {
 	// Register Routes
 	e.GET("/", s.getBoard)
 	e.POST("/report", s.reportScore)
+	e.GET("/log.json", s.logJson)
 	e.POST("/bench", nil)
 	e.Logger.Fatal(e.Start(":8080"))
 }
