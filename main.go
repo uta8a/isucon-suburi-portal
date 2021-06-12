@@ -18,11 +18,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Team struct {
-	Id        int       `db:"id"`
-	Name      string    `db:"name"`
-	CreatedAt time.Time `db:"created_at"`
-}
+// type Team struct {
+// 	Id        int       `db:"id"`
+// 	Name      string    `db:"name"`
+// 	CreatedAt time.Time `db:"created_at"`
+// }
 
 type ScoreLog struct {
 	Id        int       `db:"id"`
@@ -43,10 +43,11 @@ type Report struct {
 	Score    int    `json:"score"`
 	Message  string `json:"message"`
 }
-type ScoreBoard struct {
-	Len  int   `json:"len"`
-	Logs []Log `json:"logs"`
-}
+
+// type ScoreBoard struct {
+// 	Len  int   `json:"len"`
+// 	Logs []Log `json:"logs"`
+// }
 
 type Template struct {
 	templates *template.Template
