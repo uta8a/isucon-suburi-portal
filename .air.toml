@@ -1,0 +1,6 @@
+root = "/go/src/github.com/uta8a/isucon-suburi-portal"
+tmp_dir = "/tmp"
+
+[build]
+cmd = "go build -o /tmp/main /go/src/github.com/uta8a/isucon-suburi-portal"
+bin = "/tmp/main"
