@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:8
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      # - dbdata:/var/lib/mysql
+      - ./migrations:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=test_root_pass
+      - MYSQL_DATABASE=test_db
+      - MYSQL_USER=test_user
+      - MYSQL_PASSWORD=test_pass
+      - TZ="Asia/Tokyo"
+  backend:
+    build:
+      context: ../../
+      dockerfile: local-dev/dev/Dockerfile.server
+    volumes:
+      - ../../:/go/src/github.com/uta8a/isucon-suburi-portal
+    ports:
+      - '8080:8080'
+    restart: always
+volumes:
+  dbdata:
+    driver: local

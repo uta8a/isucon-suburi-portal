@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISUCON練習Scoreboard</title>
+  <style>
+    #table {
+      padding: 2rem;
+    }
+    .title {
+      padding-left: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="title">ISUCON練習Scoreboard</h1>
+  <div id="table">
+    <table>
+      <thead>
+        <tr>
+          <th>チーム名</th>
+          <th>スコア</th>
+          <th>メッセージ</th>
+          <th>時刻</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .}}
+        <tr>
+          <td>
+            {{ .TeamName}}
+          </td>
+          <td>
+            {{ .Score}}
+          </td>
+          <td>
+            {{ .Message}}
+          </td>
+          <td>
+            {{ .LogTime}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
